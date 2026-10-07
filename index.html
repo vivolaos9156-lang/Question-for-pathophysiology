@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="loma">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ເກມຕອບຄຳຖາມ - Pathophysiology Quiz</title>
+  <!-- นำเข้าฟอนต์ภาษาลาว Noto Sans Lao จาก Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Noto Sans Lao', sans-serif;
+    }
+    body {
+      background-color: #f0f4f8;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .quiz-container {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 650px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #eef2f6;
+      padding-bottom: 15px;
+    }
+    .progress-text {
+      font-weight: 500;
+      color: #4a5568;
+    }
+    .score-text {
+      font-weight: 700;
+      color: #2b6cb0;
+    }
+    .btn-restart {
+      background-color: #4a5568;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+    .btn-restart:hover {
+      background-color: #2d3748;
+    }
+    .question-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1a202c;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    .options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .option-btn {
+      background-color: #f7fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 14px 18px;
+      text-align: left;
+      font-size: 15px;
+      color: #2d3748;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      line-height: 1.5;
+    }
+    .option-btn:hover:not([disabled]) {
+      background-color: #ebf8ff;
+      border-color: #3182ce;
+      color: #2b6cb0;
+    }
+    .option-btn.correct {
+      background-color: #c6f6d5 !important;
+      border-color: #38a169 !important;
+      color: #22543d !important;
+      font-weight: 500;
+    }
+    .option-btn.wrong {
+      background-color: #fed7d7 !important;
+      border-color: #e53e3e !important;
+      color: #742a2a !important;
+    }
+    .next-container {
+      margin-top: 24px;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .btn-next {
+      background-color: #3182ce;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      display: none;
+      transition: background 0.2s;
+    }
+    .btn-next:hover {
+      background-color: #2b6cb0;
+    }
+    .result-box {
+      text-align: center;
+      padding: 20px 0;
+    }
+    .result-box h2 {
+      color: #2d3748;
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    .result-score {
+      font-size: 40px;
+      font-weight: 700;
+      color: #3182ce;
+      margin: 15px 0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="quiz-container">
+  <div class="header">
+    <div id="progress" class="progress-text">ຄຳຖາມ 1/20</div>
+    <div id="score" class="score-text">ຄະແນນ: 0</div>
+    <button class="btn-restart" onclick="initQuiz()">
+      🔄 ເລີ່ມໃໝ່ (Restart)
+    </button>
+  </div>
+
+  <div id="quiz-body">
+    <div id="question" class="question-title">ກຳລັງໂຫຼດຄຳຖາມ...</div>
+    <div id="options" class="options-grid"></div>
+    <div class="next-container">
+      <button id="btn-next" class="btn-next" onclick="nextQuestion()">ຂໍ້ຕໍ່ໄປ ➔</button>
+    </div>
+  </div>
+
+  <div id="result-body" class="result-box" style="display: none;">
+    <h2>🎉 ສຳເລັດການຕອບຄຳຖາມ!</h2>
+    <p>ຄະແນນທີ່ທ່ານໄດ້ຮັບ:</p>
+    <div id="final-score" class="result-score">0 / 20</div>
+    <button class="btn-next" style="display: inline-block;" onclick="initQuiz()">🔄 ຫຼິ້ນໃໝ່ອີກຄັ້ງ</button>
+  </div>
+</div>
+
+<script>
+  // ຂໍ້ມູນຄຳຖາມ ແລະ ຕົວເລືອກທັງໝົດ 20 ຂໍ້
+  const masterQuestions = [
+    {
+      q: "1. ຂໍ້ໃດບໍ່ແມ່ນ 1 ໃນ 5 ສັນຍານປະຈໍາ (Cardinal Signs) ຂອງການອັກເສບ?",
+      options: [
+        { text: "Rubor (ແດງ)", correct: false },
+        { text: "Calor (ຮ້ອນ)", correct: false },
+        { text: "Cyanosis (ຂຽວຄໍ້າ)", correct: true },
+        { text: "Dolor (ເຈັບປວດ)", correct: false }
+      ]
+    },
+    {
+      q: "2. ຈຸລັງເມັດເລືອດຂາວຫຼັກທີ່ພົບໃນການອັກເສບແບບກະທັນຫັນ (Acute Inflammation) ແມ່ນຈຸລັງໃດ?",
+      options: [
+        { text: "Neutrophils", correct: true },
+        { text: "Lymphocytes", correct: false },
+        { text: "Macrophages", correct: false },
+        { text: "Plasma cells", correct: false }
+      ]
+    },
+    {
+      q: "3. ສານເຄມີໃດທີ່ມີບົດບາດຫຼັກໃນການກະຕຸ້ນໃຫ້ຈຸລັງຜະໜັງເສັ້ນເລືອດ (Endothelial cells) ຫົດໂຕ ເພື່ອເພີ່ມຄວາມຊຶມຜ່ານຂອງເສັ້ນເລືອດ?",
+      options: [
+        { text: "Insulin ແລະ Glucagon", correct: false },
+        { text: "Histamine ແລະ Bradykinin", correct: true },
+        { text: "Hemoglobin ແລະ Myoglobin", correct: false },
+        { text: "Erythropoietin ແລະ Renin", correct: false }
+      ]
+    },
+    {
+      q: "4. ຂໍ້ໃດແມ່ນລັກສະນະທີ່ແຕກຕ່າງຂອງນໍ້າອັກເສບ (Exudate) ເມື່ອປຽບທຽບໃສ່ນໍ້າຊຶມ (Transudate)?",
+      options: [
+        { text: "ມີປະລິມານໂປຣຕີນຕໍ່າ (< 3.0 g/dL)", correct: false },
+        { text: "ມີຄວາມຖ່ວງຈໍາເພາະຕໍ່າ (< 1.012)", correct: false },
+        { text: "ມີປະລິມານໂປຣຕີນສູງ (> 3.0 g/dL) ແລະ ມີເມັດເລືອດຂາວຫຼາຍ", correct: true },
+        { text: "ບໍ່ສາມາດກ້າມໂຕໄດ້", correct: false }
+      ]
+    },
+    {
+      q: "5. ຫຼັກການ RICE Protocol ທີ່ໃຊ້ໃນການປະຖົມພະຍາບານການບາດເຈັບທາງກາຍະພາບເບື້ອງຕົ້ນ ປະກອບມີຫຍັງແດ່?",
+      options: [
+        { text: "Run, Ice, Cold, Exercise", correct: false },
+        { text: "Rest, Ice, Compression, Elevation", correct: true },
+        { text: "Rest, Injection, Care, Examination", correct: false },
+        { text: "Relief, Ice, Control, Emergency", correct: false }
+      ]
+    },
+    {
+      q: "6. ອາການບວມນໍ້າ (Edema) ຕາມນິຍາມທາງສະລິລະພະຍາດ ແມ່ນເກີດຈາກຫຍັງ?",
+      options: [
+        { text: "ການອັ່ງຂອງທາດແຫຼວໃນຊ່ອງຫວ່າງຈຸລັງ (Intercellular space) ຫຼາຍກວ່າປົກກະຕິ", correct: true },
+        { text: "ການເພີ່ມຂຶ້ນຂອງຈໍານວນເມັດເລືອດແດງໃນເສັ້ນເລືອດ", correct: false },
+        { text: "ການຫຼຸດລົງຂອງທາດແຫຼວພາຍໃນຈຸລັງ", correct: false },
+        { text: "ການແຂງໂຕຂອງໂຄງສ້າງກະດູກ ແລະ ເນື້ອເຍື່ອ", correct: false }
+      ]
+    },
+    {
+      q: "7. ພາວະນໍ້າຖ້ວມເຍື່ອຫຸ້ມປອດ (Pleural effusion) ຈັດຢູ່ໃນກຸ່ມໃດ?",
+      options: [
+        { text: "Intracellular edema", correct: false },
+        { text: "Effusion", correct: true },
+        { text: "Non-pitting edema", correct: false },
+        { text: "Lymphedema", correct: false }
+      ]
+    },
+    {
+      q: "8. ພະຍາດຫົວໃຈຊຸດໂຊມ (Heart Failure) ເຮັດໃຫ້ເກີດອາການບວມນໍ້າຜ່ານກົນໄກຕົ້ນຕໍໃດ?",
+      options: [
+        { text: "ການເພີ່ມຂຶ້ນຂອງແຮງດັນ Hydrostatic ໃນເສັ້ນເລືອດ", correct: true },
+        { text: "ການຫຼຸດລົງຂອງຄວາມຢືດຢູ່ນຂອງເສັ້ນເລືອດ", correct: false },
+        { text: "ການອຸດຕັນຂອງທໍ່ນໍ້າເຫຼືອງໂດຍກົງ", correct: false },
+        { text: "ການຫຼຸດລົງຂອງຮໍໂມນ Aldosterone", correct: false }
+      ]
+    },
+    {
+      q: "9. ພາວະຕັບແຂງ ຫຼື ພະຍາດໝາກໄຂ່ຫຼັງ (Nephrotic syndrome) ເຮັດໃຫ້ເກີດອາການບວມຍ້ອນກົນໄກໃດ?",
+      options: [
+        { text: "ເພີ່ມແຮງດັນ Hydrostatic", correct: false },
+        { text: "ຫຼຸດແຮງດັນ Oncotic (Reduced Oncotic Pressure) ຍ້ອນ Albumin ໃນເລືອດຕໍ່າ", correct: true },
+        { text: "ເກີດການອຸດຕັນຂອງພະຍາດຕີນຊ້າງ", correct: false },
+        { text: "ຫຼຸດການຫຼັ່ງຮໍໂມນ ADH", correct: false }
+      ]
+    },
+    {
+      q: "10. ຂໍ້ໃດຕໍ່ໄປນີ້ຈັດເປັນອາການ ບວມບໍ່ລຸບ (Non-pitting edema)?",
+      options: [
+        { text: "ບວມຈາກຊຸດໂຊມຫົວໃຈ (Heart Failure)", correct: false },
+        { text: "ບວມຈາກຊຸດໂຊມໝາກໄຂ່ຫຼັງຊຳເຮື້ອ", correct: false },
+        { text: "ບວມຈາກຕ່ອມໄທຣອຍເຊື່ອມ (Myxedema) ຫຼື ພະຍາດຕີນຊ້າງ", correct: true },
+        { text: "ບວມຈາກພະຍາດຕັບແຂງ", correct: false }
+      ]
+    },
+    {
+      q: "11. ຂໍ້ໃດອະທິບາຍຄວາມແຕກຕ່າງທາງສະລິລະພະຍາດວິທະຍາລະຫວ່າງ ພາວະໄຂ້ (Fever) ແລະ ພາວະຄວາມຮ້ອນໃນຮ່າງກາຍສູງເກີນ (Hyperthermia) ໄດ້ຖືກຕ້ອງທີ່ສຸດ?",
+      options: [
+        { text: "Hyperthermia ເກີດຈາກການເພີ່ມຂຶ້ນຂອງ Set-point ຢູ່ Hypothalamus, ແຕ່ Fever ເກີດຈາກລະບົບລະບາຍຄວາມຮ້ອນຊຸດໂຊມ", correct: false },
+        { text: "Fever ເກີດຈາກການປັບເພີ່ມ Set-point ຢູ່ Hypothalamus ໂດຍການກະຕຸ້ນຂອງ Pyrogens, ສ່ວນ Hyperthermia ເກີດຈາກຮ່າງກາຍສ້າງຄວາມຮ້ອນຫຼາຍເກີນ ຫຼື ລະບາຍຄວາມຮ້ອນບໍ່ໄດ້ໂດຍບໍ່ກ່ຽວກັບ Set-point", correct: true },
+        { text: "Fever ເປັນພາວະທີ່ອຸນຫະພູມຮ່າງກາຍເພີ່ມຂຶ້ນຈາກສະພາບແວດລ້ອມ, ແຕ່ Hyperthermia ເກີດຈາກການຕິດເຊື້ອພະຍາດ", correct: false },
+        { text: "ທັງສອງພາວະມີກົນໄກການເກີດທີ່ຄືກັນ ແຕ່ແຕກຕ່າງກັນພຽງແຕ່ລະດັບຄວາມຮຸນແຮງຂອງອຸນຫະພູມ", correct: false }
+      ]
+    },
+    {
+      q: "12. ໃນຂະບວນການເກີດໄຂ້, ສານ Endogenous Pyrogens (ເຊັ່ນ: IL-1, IL-6, TNF-a) ສົ່ງຜົນເຮັດໃຫ້ອຸນຫະພູມຮ່າງກາຍສູງຂຶ້ນຜ່ານກົນໄກສານເຄມີໃດໃນ Hypothalamus?",
+      options: [
+        { text: "ຢັບຢັ້ງການຫຼັ່ງ Acetylcholine", correct: false },
+        { text: "ກະຕຸ້ນການທໍາລາຍ Cyclooxygenase (COX) enzyme", correct: false },
+        { text: "ຫຼຸດລະດັບ Histamine ໃນສະໝອງ", correct: false },
+        { text: "ກະຕຸ້ນການສ້າງ ແລະ ຫຼັງ Prostaglandin E2 (PGE2)", correct: true }
+      ]
+    },
+    {
+      q: "13. ເມື່ອຮ່າງກາຍເຂົ້າສູ່ \"ໄລຍະເລີ່ມມີໄຂ້\" (Initial Stage / Cold Stage), ຮ່າງກາຍຈະມີການຕອບສະໜອງທາງສະລິລະວິທະຍາແບບໃດ?",
+      options: [
+        { text: "ເສັ້ນເລືອດຢູ່ຜິວໜັງຂະຫຍາຍຕົວ (Vasodilation) ແລະ ເຫື່ອອອກຫຼາຍ", correct: false },
+        { text: "ເສັ້ນເລືອດຢູ່ຜິວໜັງຫົດຕົວ (Vasoconstriction) ແລະ ກ້າມຊີ້ນສັ່ນ (Shivering) ເພື່ອສ້າງຄວາມຮ້ອນ", correct: true },
+        { text: "ອັດຕາການເຜົາຜານພະລັງງານຫຼຸດລົງ ແລະ ຕ່ອມເຫື່ອເຮັດວຽກໜັກ", correct: false },
+        { text: "ອຸນຫະພູມຮ່າງກາຍສູງກວ່າ Set-point ໃໝ່ ຈຶ່ງຕ້ອງຮີບລະບາຍຄວາມຮ້ອນ", correct: false }
+      ]
+    },
+    {
+      q: "14. ຢາຫຼຸດໄຂ້ (Antipyretics) ເຊັ່ນ: Paracetamol ຫຼື NSAIDs ມີກົນໄກການອອກລິດແນວໃດໃນການຫຼຸດອຸນຫະພູມຮ່າງກາຍ?",
+      options: [
+        { text: "ຢັບຢັ້ງ Enzyme Cyclooxygenase (COX) ເຮັດໃຫ້ການສ້າງ PGE2 ຫຼຸດລົງ ແລະ ປັບ Set-point ກັບຄືນສູ່ລະດັບປົກກະຕິ", correct: true },
+        { text: "ເຮັດໃຫ້ເສັ້ນເລືອດຢູ່ຜິວໜັງຫົດຕົວໂດຍຕ່າງໜ້າ Hypothalamus", correct: false },
+        { text: "ທໍາລາຍ Exogenous Pyrogen (LPS) ໂດຍກົງໃນກະແສເລືອດ", correct: false },
+        { text: "ຢັບຢັ້ງການເຮັດວຽກຂອງຕ່ອມເຫື່ອ ເພື່ອຫຼຸດການສູນເສຍເກືອແຮ່", correct: false }
+      ]
+    },
+    {
+      q: "15. ຖ້າຄົນເຈັບມີໄຂ້ສູງເພີ່ມຂຶ້ນ 2°C, ອັດຕາການເຕັ້ນຂອງຫົວໃຈ ແລະ ອັດຕາການເຜົາຜານພະລັງງານ (Metabolism) ຈະມີການປ່ຽນແປງແນວໃດຕາມລໍາດັບ?",
+      options: [
+        { text: "ຫົວໃຈເຕັ້ນໄວຂຶ້ນ 8-10 ຄັ້ງ/ນາທີ, Metabolism ເພີ່ມຂຶ້ນ 7%", correct: false },
+        { text: "ຫົວໃຈເຕັ້ນໄວຂຶ້ນ 16-20 ຄັ້ງ/ນາທີ, Metabolism ເພີ່ມຂຶ້ນ 14%", correct: true },
+        { text: "ຫົວໃຈເຕັ້ນໄວຂຶ້ນ 2-4 ຄັ້ງ/ນາທີ, Metabolism ເພີ່ມຂຶ້ນ 20%", correct: false },
+        { text: "ຫົວໃຈເຕັ້ນຊ້າລົງ 10 ຄັ້ງ/ນາທີ, Metabolism ຫຼຸດລົງ 14%", correct: false }
+      ]
+    },
+    {
+      q: "16. ຮູບແບບການຂຶ້ນ-ລົງຂອງໄຂ້ແບບ Intermittent Fever ມີລັກສະນະເດັ່ນແນວໃດ ແລະ ມັກພົບໃນພະຍາດໃດ?",
+      options: [
+        { text: "ອຸນຫະພູມປ່ຽນແປງບໍ່ເກີນ 1°C ໃນ 24 ຊົ່ວໂມງ ແລະ ບໍ່ເຄີຍລົງຮອດປົກກະຕິ, ພົບໃນ ໄຂ້ທໍລະພິດ", correct: false },
+        { text: "ມີໄຂ້ສູງຕິດຕໍ່ກັນຫຼາຍມື້ ແລ້ວຫາຍໄປຫຼາຍມື້ ຈຶ່ງກັບມາເປັນໃໝ່, ພົບໃນ ປອດອັກເສບ", correct: false },
+        { text: "ອຸນຫະພູມປ່ຽນແປງຫຼາຍກວ່າ 2°C ແຕ່ບໍ່ເຄີຍລົງຮອດປົກກະຕິ, ພົບໃນ ເຍື່ອຫຸ້ມຫົວໃຈອັກເສບ", correct: false },
+        { text: "ມີຊ່ວງທີ່ອຸນຫະພູມຂຶ້ນສູງ ແລະ ມີຊ່ວງທີ່ກັບລົງມາປົກກະຕິໃນລະຫວ່າງວັນ, ພົບໃນ ໄຂ້ມາລາເຣຍ", correct: true }
+      ]
+    },
+    {
+      q: "17. ບໍລິເວນໃດຂອງ Hypothalamus ທີ່ເຮັດໜ້າທີ່ເປັນ \"Heat-dissipating area\" ຫຼື ສູນກາງຫຼຸດຄວາມຮ້ອນ?",
+      options: [
+        { text: "Anterior Hypothalamus", correct: true },
+        { text: "Posterior Hypothalamus", correct: false },
+        { text: "Lateral Hypothalamus", correct: false },
+        { text: "Paraventricular Nucleus", correct: false }
+      ]
+    },
+    {
+      q: "18. ສານ Lipopolysaccharide (LPS) ທີ່ຢູ່ຝາຈຸລັງຂອງແບັກທີເຣຍ ຈັດຢູ່ໃນກຸ່ມສານໃດທີ່ເຮັດໃຫ້ເກີດໄຂ້?",
+      options: [
+        { text: "Endogenous Pyrogen", correct: false },
+        { text: "Exogenous Pyrogen", correct: true },
+        { text: "Endogenous Antipyretic", correct: false },
+        { text: "Prostaglandin Receptor Inhibitor", correct: false }
+      ]
+    },
+    {
+      q: "19. ອາການແຊກຊ້ອນ ອາການຊັກຈາກໄຂ້ສູງ (Febrile Seizure) ມັກພົບຫຼາຍໃນກຸ່ມໃດ ແລະ ຍ້ອນສາເຫດໃດ?",
+      options: [
+        { text: "ຜູ້ສູງອາຍຸ ເນື່ອງຈາກສະໝອງເສື່ອມສະພາບ", correct: false },
+        { text: "ເດັກນ້ອຍອາຍຸ 6 ເດືອນ ຫາ 5 ປີ ເນື່ອງຈາກລະບົບປະສາດຍັງພັດທະນາບໍ່ເຕັມທີ່", correct: true },
+        { text: "ຜູ້ໃຫຍ່ທີ່ມີພາວະຂາດນໍ້າຢ່າງຮຸນແຮງ", correct: false },
+        { text: "ຄົນເຈັບທີ່ມີພາວະໂປຣຕີນໃນຈຸລັງເສຍສະພາບ (Hyperpyrexia)", correct: false }
+      ]
+    },
+    {
+      q: "20. ເມື່ອມີໄຂ້, ລະບົບພູມຄຸ້ມກັນຂອງຮ່າງກາຍຈະມີການຕອບສະໜອງທາງສະລິລະວິທະຍາແນວໃດ ເພື່ອຕໍ່ສູ້ກັບການຕິດເຊື້ອ?",
+      options: [
+        { text: "ເມັດເລືອດຂາວເພີ່ມຂຶ້ນ 2-3 ເທົ່າ, ການຜະລິດແອນຕີບໍດີເພີ່ມຂຶ້ນ 20-30% ແລະ ປະສິດທິພາບການກໍາຈັດເຊື້ອເພີ່ມຂຶ້ນ 40-50%", correct: true },
+        { text: "ເມັດເລືອດຂາວຫຼຸດລົງ 50%, ການຜະລິດແອນຕີບໍດີເພີ່ມຂຶ້ນ 100%", correct: false },
+        { text: "ການຫຼັງ Interferon ຫຼຸດລົງ ເພື່ອປ້ອງກັນຈຸລັງສະໝອງຖືກທໍາລາຍ", correct: false },
+        { text: "ປະສິດທິພາບການກຳຈັດເຊື້ອພະຍາດຫຼຸດລົງ ເພາະເອນໄຊມ໌ໃນເມັດເລືອດຂາວຖືກທໍາລາຍ", correct: false }
+      ]
+    }
+  ];
+
+  let currentQuestions = [];
+  let currentIndex = 0;
+  let score = 0;
+
+  // ฟังก์ชันสำหรับสุ่มลำดับ Array (Fisher-Yates Shuffle)
+  function shuffleArray(array) {
+    const arr = JSON.parse(JSON.stringify(array));
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  // ฟังก์ชันเริ่มต้นหรือรีเซ็ตเกมใหม่
+  function initQuiz() {
+    currentIndex = 0;
+    score = 0;
+    document.getElementById("score").innerText = `ຄະແນນ: ${score}`;
+    document.getElementById("quiz-body").style.display = "block";
+    document.getElementById("result-body").style.display = "none";
+
+    // 1. สลับลำดับคำถามทั้ง 20 ข้อ
+    currentQuestions = shuffleArray(masterQuestions);
+
+    // 2. สลับลำดับตัวเลือกคำตอบในแต่ละข้อ
+    currentQuestions.forEach(q => {
+      q.options = shuffleArray(q.options);
+    });
+
+    showQuestion();
+  }
+
+  // แสดงคำถามปัจจุบัน
+  function showQuestion() {
+    const q = currentQuestions[currentIndex];
+    
+    document.getElementById("progress").innerText = `ຄຳຖາມ ${currentIndex + 1}/${currentQuestions.length}`;
+    document.getElementById("question").innerText = q.q;
+    document.getElementById("btn-next").style.display = "none";
+
+    const optionsContainer = document.getElementById("options");
+    optionsContainer.innerHTML = "";
+
+    const laoPrefixes = ["ກ. ", "ຂ. ", "ຄ. ", "ງ. "];
+
+    q.options.forEach((opt, index) => {
+      const btn = document.createElement("button");
+      btn.className = "option-btn";
+      btn.innerText = laoPrefixes[index] + opt.text;
+      btn.onclick = () => selectAnswer(btn, opt.correct);
+      optionsContainer.appendChild(btn);
+    });
+  }
+
+  // เมื่อผู้เล่นคลิกเลือกคำตอบ
+  function selectAnswer(selectedBtn, isCorrect) {
+    const allButtons = document.querySelectorAll(".option-btn");
+    
+    // ปิดการกดปุ่มทั้งหมดหลังจากเลือกแล้ว
+    allButtons.forEach(btn => btn.disabled = true);
+
+    if (isCorrect) {
+      selectedBtn.classList.add("correct");
+      score++;
+      document.getElementById("score").innerText = `ຄະແນນ: ${score}`;
+    } else {
+      selectedBtn.classList.add("wrong");
+      // แสดงคำตอบที่ถูกต้องให้ผู้เล่นเห็น
+      const currentOpts = currentQuestions[currentIndex].options;
+      allButtons.forEach((btn, idx) => {
+        if (currentOpts[idx].correct) {
+          btn.classList.add("correct");
+        }
+      });
+    }
+
+    document.getElementById("btn-next").style.display = "block";
+  }
+
+  // ไปคำถามข้อถัดไป
+  function nextQuestion() {
+    currentIndex++;
+    if (currentIndex < currentQuestions.length) {
+      showQuestion();
+    } else {
+      showResult();
+    }
+  }
+
+  // แสดงหน้าสรุปผลคะแนน
+  function showResult() {
+    document.getElementById("quiz-body").style.display = "none";
+    document.getElementById("result-body").style.display = "block";
+    document.getElementById("final-score").innerText = `${score} / ${currentQuestions.length}`;
+  }
+
+  // เริ่มต้นทำงานครั้งแรกเมื่อโหลดหน้าเว็บ
+  window.onload = initQuiz;
+</script>
+
+</body>
+</html>
